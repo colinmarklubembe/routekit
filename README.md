@@ -132,6 +132,10 @@ withErrorHandling<T extends express.Request>(
 
 - **`handler`**: The async route handler to wrap.  
 
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
 ## 🙏 Acknowledgements
 
 - **Express.js** for providing the foundation for this utility.  

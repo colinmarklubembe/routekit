@@ -2,6 +2,7 @@ import type { Options } from "semantic-release";
 
 const config: Options = {
   branches: ["main"],
+  repositoryUrl: "https://github.com/colinmarklubembe/routekit.git",
   plugins: [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",

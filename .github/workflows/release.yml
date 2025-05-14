@@ -25,5 +25,5 @@ jobs:
       - name: Run Semantic Release (with TS config)
         run: npx tsx release.config.ts | xargs -0 npx semantic-release -e
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

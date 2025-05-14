@@ -10,6 +10,7 @@ Supports typed routes, optional middleware, and easy error handling.
 - **Optional auth middleware**: Easily integrate authentication middleware.  
 - **Built-in async error handling wrapper**: Simplify error handling with built-in support for async handlers.  
 - **Supports custom request types**: Extend the request object (e.g., `req.user`) for more flexibility.  
+- **Duplicate route detection**: Logs a warning when duplicate routes are registered.  
 
 ## 📦 Install
 
@@ -101,6 +102,16 @@ createRouteHandler(router, routes);
 app.use("/api", router);
 ```
 
+### Duplicate Route Detection
+
+If the same route is registered more than once, a warning will be logged:
+
+```bash
+⚠️ Duplicate route detected: GET /path
+```
+
+You can prevent this by ensuring each route path is unique when registering routes.
+
 ## 📝 Documentation
 
 ### `createRouteHandler`
@@ -119,10 +130,12 @@ createRouteHandler(
 - **`routes`**: An array of route configurations.  
 - **`options`**: Optional configuration object.  
   - **`logRoutes`**: Logs registered routes to the console.  
+  - **`authMiddleware`**: Optionally add authentication middleware for protected routes.  
+  - **`globalMiddlewares`**: Optionally add global middleware to all routes.  
 
 ### `withErrorHandling`
 
-Wraps an async route handler with error handling.
+Wraps an async route handler with error handling. This ensures that any thrown error is passed to Express's error middleware.
 
 ```typescript
 withErrorHandling<T extends express.Request>(
@@ -132,9 +145,42 @@ withErrorHandling<T extends express.Request>(
 
 - **`handler`**: The async route handler to wrap.  
 
+### `RouteConfig`
+
+The configuration object for defining a route.
+
+```typescript
+interface RouteConfig<TReq extends express.Request = express.Request> {
+  method: HttpMethod; 
+  path: string; 
+  handler: ControllerMethod<TReq>;
+  middlewares?: express.RequestHandler[]; 
+  description?: string;
+}
+```
+
+- **`method`**: The HTTP method for the route (e.g., "get", "post", etc.).  
+- **`path`**: The route path (e.g., "/users").  
+- **`handler`**: The function that handles the request. It can be asynchronous.  
+- **`middlewares`**: An optional array of middleware functions to apply to this specific route.  
+- **`description`**: An optional description of the route, which is logged if `logRoutes` is enabled.  
+
+### `ControllerMethod`
+
+A type for defining request handler functions with custom request types.
+
+```typescript
+type ControllerMethod<TReq extends express.Request = express.Request> = (
+  req: TReq,
+  res: express.Response
+) => Promise<void>;
+```
+
+You can extend the `Request` type (e.g., `req.user`) for more flexibility.
+
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](https://github.com/colinmarklubembe/routekit?tab=MIT-1-ov-file).
 
 ## 🙏 Acknowledgements
 

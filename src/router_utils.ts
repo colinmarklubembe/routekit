@@ -1,6 +1,6 @@
 import { Router, Request, Response, RequestHandler } from "express";
 
-// Allowed HTTP methods for routing
+// Allowed HTTP methods
 type HttpMethod = "get" | "post" | "put" | "delete" | "patch";
 
 // TReq allows custom request types, like ones with `req.user`
@@ -9,22 +9,23 @@ export type ControllerMethod<TReq extends Request = Request> = (
   res: Response
 ) => Promise<void>;
 
-// Configuration for a single route
+// Single route config
 export interface RouteConfig<TReq extends Request = Request> {
-  method: HttpMethod; // HTTP method (get, post, etc.)
+  method: HttpMethod;
   path: string; // Route path (e.g. "/users")
   handler: ControllerMethod<TReq>; // Function that handles the request
-  middlewares?: RequestHandler[]; // Optional route-specific middleware
+  middlewares?: RequestHandler[];
+  description?: string; // Optional description for logging or docs
 }
 
-// Optional global options when setting up routes
+// Optional global config
 interface CreateRouteHandlerOptions {
-  authMiddleware?: RequestHandler; // Optional auth middleware (e.g. JWT check)
-  globalMiddlewares?: RequestHandler[]; // Middleware applied to all routes
-  logRoutes?: boolean; // Whether to log registered routes
+  authMiddleware?: RequestHandler;
+  globalMiddlewares?: RequestHandler[];
+  logRoutes?: boolean;
 }
 
-// Creates and registers all routes on a given Express router
+// Register routes
 export const createRouteHandler = <TReq extends Request = Request>(
   router: Router,
   routes: RouteConfig<TReq>[],
@@ -36,13 +37,18 @@ export const createRouteHandler = <TReq extends Request = Request>(
     logRoutes = false, // Enable/disable logging
   } = options;
 
-  // Loop through each route config and register it
-  routes.forEach(({ method, path, handler, middlewares = [] }) => {
-    // Build middleware stack in order:
-    // 1. Global middleware (e.g., CORS, JSON body parser)
-    // 2. Optional auth middleware
-    // 3. Route-specific middleware
-    // 4. Controller handler
+  const registeredRoutes = new Set<string>();
+
+  routes.forEach(({ method, path, handler, middlewares = [], description }) => {
+    const routeKey = `${method.toUpperCase()} ${path}`;
+
+    // Warn if duplicate
+    if (registeredRoutes.has(routeKey)) {
+      console.warn(`⚠️ Duplicate route detected: ${routeKey}`);
+    } else {
+      registeredRoutes.add(routeKey);
+    }
+
     const stack: RequestHandler[] = [
       ...globalMiddlewares,
       ...(authMiddleware ? [authMiddleware] : []),
@@ -50,15 +56,15 @@ export const createRouteHandler = <TReq extends Request = Request>(
       handler as unknown as RequestHandler, // Type cast needed for Express compatibility
     ];
 
-    // Log route registration if enabled
     if (logRoutes) {
-      console.log(`Registering [${method.toUpperCase()}] ${path}`);
+      console.log(`✅ [${method.toUpperCase()}] ${path}`);
+      if (description) {
+        console.log(`   ↳ ${description}`);
+      }
     }
 
-    // Register the route on the Express router
     router[method](path, ...stack);
   });
 
-  // Return the configured router so it can be mounted
   return router;
 };

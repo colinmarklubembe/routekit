@@ -1,6 +1,6 @@
 {
   "name": "@exkit/routekit",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "description": "Simple Express route handler for TypeScript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

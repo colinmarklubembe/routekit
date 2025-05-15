@@ -19,13 +19,8 @@ jobs:
           node-version: "20"
           registry-url: "https://registry.npmjs.org/"
 
-      - name: Check if NPM_TOKEN is set
-        run: |
-          if [ -z "$NPM_TOKEN" ]; then
-            echo "❌ NPM_TOKEN is not set"
-            exit 1
-          fi
-          echo "✅ NPM_TOKEN is set"
+      - name: Create .npmrc file
+        run: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 

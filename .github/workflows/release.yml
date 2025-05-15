@@ -19,11 +19,23 @@ jobs:
           node-version: "20"
           registry-url: "https://registry.npmjs.org/"
 
+      - name: Check if NPM_TOKEN is set
+        run: |
+          if [ -z "$NPM_TOKEN" ]; then
+            echo "❌ NPM_TOKEN is not set"
+            exit 1
+          fi
+          echo "✅ NPM_TOKEN is set"
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Install dependencies
         run: npm ci
 
-      - name: The NPM_TOKEN
-        run: echo $NPM_TOKEN
+      - name: Check token length (safe log)
+        run: echo ${#NPM_TOKEN}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Run Semantic Release (with TS config)
         run: npx tsx release.config.ts | xargs -0 npx semantic-release -e
